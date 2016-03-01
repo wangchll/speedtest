@@ -1,2 +1,2 @@
 GCC=gcc
-$GCC -lpthread -lm -o speedtest speedtest.c
+$GCC -o speedtest speedtest.c -lpthread -lm

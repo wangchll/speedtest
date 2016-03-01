@@ -111,11 +111,11 @@ int _eval(char *const argv[])
     char buf[EVAL_MAX+1];
     int n = 0, i = 0, tmp;
 
-    if(!strcmp(argv[0], "curl")) {
+    /* if(!strcmp(argv[0], "curl")) {
         strcpy(buf, "curl -A \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36\" ");
         n = strlen(buf);
         i = 1;
-    }
+    } */
 
     while(argv[i]) {
         tmp = strlen(argv[i]);

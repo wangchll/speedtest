@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2014, Broadcom Corporation
  * All Rights Reserved.
- * 
+ *
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
  * the contents of this file may not be disclosed to third parties, copied
  * or duplicated in any form, in whole or in part, without the prior
@@ -102,148 +102,30 @@ static char* nvram_safe_get(char *name) {
 typedef __sighandler_t sighandler_t;
 #define eval(cmd, args...) ({ \
 	char * const argv[] = { cmd, ## args, NULL }; \
-	_eval(argv, NULL, 0, NULL); \
+	_eval(argv); \
 })
 
-/*
- * Concatenates NULL-terminated list of arguments into a single
- * commmand and executes it
- * @param	argv	argument list
- * @param	path	NULL, ">output", or ">>output"
- * @param	timeout	seconds to wait before timing out or 0 for no timeout
- * @param	ppid	NULL to wait for child termination or pointer to pid
- * @return	return value of executed command or errno
- *
- * Ref: http://www.open-std.org/jtc1/sc22/WG15/docs/rr/9945-2/9945-2-28.html
- */
-int _eval(char *const argv[], const char *path, int timeout, int *ppid)
+int _eval(char *const argv[])
 {
-	sigset_t set, sigmask;
-	sighandler_t chld = SIG_IGN;
-	pid_t pid, w;
-	int status = 0;
-	int fd;
-	int flags;
-	int sig;
-	int n;
-	const char *p;
-	char s[256];
-	//char *cpu0_argv[32] = { "taskset", "-c", "0"};
-	//char *cpu1_argv[32] = { "taskset", "-c", "1"};
+#define EVAL_MAX 1024
+    char buf[EVAL_MAX+1];
+    int n = 0, i = 0, tmp;
 
-	if (!ppid) {
-		// block SIGCHLD
-		sigemptyset(&set);
-		sigaddset(&set, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &set, &sigmask);
-		// without this we cannot rely on waitpid() to tell what happened to our children
-		chld = signal(SIGCHLD, SIG_DFL);
-	}
+    while(argv[i]) {
+        tmp = strlen(argv[i]);
+        if(tmp+n > EVAL_MAX) {
+            break;
+        }
 
-	pid = fork();
-	if (pid == -1) {
-		perror("fork");
-		status = errno;
-		goto EXIT;
-	}
-	if (pid != 0) {
-		// parent
-		if (ppid) {
-			*ppid = pid;
-			return 0;
-		}
-		do {
-			if ((w = waitpid(pid, &status, 0)) == -1) {
-				status = errno;
-				perror("waitpid");
-				goto EXIT;
-			}
-		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
-
-		if (WIFEXITED(status)) status = WEXITSTATUS(status);
-EXIT:
-		if (!ppid) {
-			// restore signals
-			sigprocmask(SIG_SETMASK, &sigmask, NULL);
-			signal(SIGCHLD, chld);
-			//TODO reap zombies
-			//chld_reap(0);
-		}
-		return status;
-	}
-	
-	// child
-
-	// reset signal handlers
-	for (sig = 0; sig < (_NSIG - 1); sig++)
-		signal(sig, SIG_DFL);
-
-	// unblock signals if called from signal handler
-	sigemptyset(&set);
-	sigprocmask(SIG_SETMASK, &set, NULL);
-
-	setsid();
-
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-	open("/dev/null", O_RDONLY);
-	open("/dev/null", O_WRONLY);
-	open("/dev/null", O_WRONLY);
-
-	// Redirect stdout & stderr to <path>
-	if (path) {
-		flags = O_WRONLY | O_CREAT | O_NONBLOCK;
-		if (*path == '>') {
-			++path;
-			if (*path == '>') {
-				++path;
-				// >>path, append
-				flags |= O_APPEND;
-			}
-			else {
-				// >path, overwrite
-				flags |= O_TRUNC;
-			}
-		}
-		
-		if ((fd = open(path, flags, 0644)) < 0) {
-			perror(path);
-		}
-		else {
-			dup2(fd, STDOUT_FILENO);
-			dup2(fd, STDERR_FILENO);
-			close(fd);
-		}
-	}
-
-	// execute command
-
-	p = nvram_safe_get("env_path");
-	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
-	setenv("PATH", s, 1);
-
-	alarm(timeout);
-#if 1
-	execvp(argv[0], argv);
-
-	perror(argv[0]);
-#elif 0
-	for(n = 0; argv[n]; ++n)
-		cpu0_argv[n+3] = argv[n];
-	execvp(cpu0_argv[0], cpu0_argv);
-
-	perror(cpu0_argv[0]);
-#else
-	for(n = 0; argv[n]; ++n)
-		cpu1_argv[n+3] = argv[n];
-	execvp(cpu1_argv[0], cpu1_argv);
-
-	perror(cpu1_argv[0]);
-
-#endif
-
-	_exit(errno);
+        strncpy(buf+n, argv[i], tmp);
+        buf[n+tmp] = ' ';
+        n += tmp + 1;
+        i++;
+    }
+    buf[n] = '\0';
+    //printf("buf=%s\n", buf);
+    system(buf);
+    return 0;
 }
 
 static int

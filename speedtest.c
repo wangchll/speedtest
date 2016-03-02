@@ -344,7 +344,7 @@ get_nearest_servers(client_config_t *client, server_config_t *servers)
 	int j, k;
 
 	eval("curl", "-L", "-s", "-o", "/tmp/speedtest-servers.php",
-		"http://c.speedtest.net/speedtest-servers-static.php");
+		"http://c.speedtest.net/speedtest-servers-static.php?threads=4");
 
 	if (!(fp1 = fopen("/tmp/speedtest-servers.php", "r"))) {
 		perror("fopen /tmp/speedtest-servers.php");
@@ -940,4 +940,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

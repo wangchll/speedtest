@@ -160,6 +160,14 @@ get_uptime(double *uptime)
 	return 0;
 }
 
+//当前时间的unix时间戳
+int get_curr_unixtime(void)
+{
+	time_t now;
+	int unixtime = time(&now);
+	return unixtime;
+}
+
 static void
 client_free(client_config_t *client)
 {
@@ -456,20 +464,24 @@ get_nearest_servers(client_config_t *client, server_config_t *servers)
 static int
 get_lowest_latency_server(server_config_t *servers, server_config_t *best_server)
 {
-	int i, j, len, best;
+	int i, j, len, best, unixtime;
 	char *url = NULL;
 	struct timeval tv1, tv2;
 	FILE *fp1;
 	char line[12];
 	double lat;
 	double latency[3];
+	char ttime[25];
 
 	for (i = 0; i < CLOSEST_SERVERS_NUM; i++) {
 		len = strlen(servers[i].url);
-		url = malloc(len - strlen("upload.php") + strlen("latency.txt") + 1);
+		url = malloc(len - strlen("upload.php") + strlen("latency.txt") + 30);
 		strncpy(url, servers[i].url, len - strlen("upload.php"));
 		url[len - strlen("upload.php")] = '\0';
-		strcat(url, "latency.txt");
+		strcat(url, "latency.txt?x=");
+		unixtime = get_curr_unixtime();
+		sprintf(ttime, "%d" , unixtime);
+		strcat(url, ttime);
 
 		for (j = 0; j < 3; j++) {
 			gettimeofday(&tv1, NULL);

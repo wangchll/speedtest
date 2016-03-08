@@ -574,10 +574,11 @@ download_thread(void *ptr)
 	}
 	time_diff = (time_thread - time_dl_start);
 	printf("download = %.2f\n", ((finished / 1024 / 1024 / time_diff) * 8));
-	sprintf(tmp_download, "speedtest_download=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
-	eval("dbus", "ram", tmp_download);
 
 	eval("rm", file);
+
+	sprintf(tmp_download, "speedtest_download=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
+	eval("dbus", "ram", tmp_download);
 
 	return NULL;
 }
@@ -712,10 +713,11 @@ upload_thread(void *ptr)
 	}
 	time_diff = (time_thread - time_ul_start);
 	printf("upload = %.2f\n", ((finished / 1024 / 1024 / time_diff) * 8));
-	sprintf(tmp_upload, "speedtest_upload=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
-	eval("dbus", "ram", tmp_upload);
 
 	eval("rm", in->file_result);
+
+	sprintf(tmp_upload, "speedtest_upload=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
+	eval("dbus", "ram", tmp_upload);
 
 	return NULL;
 }

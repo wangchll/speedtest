@@ -485,7 +485,7 @@ get_lowest_latency_server(server_config_t *servers, server_config_t *best_server
 
 		for (j = 0; j < 3; j++) {
 			gettimeofday(&tv1, NULL);
-			eval("curl", "-L", "-s", "-o", "/tmp/latency.txt", url);
+			eval("curl", "--connect-timeout", "10", "-L", "-s", "-o", "/tmp/latency.txt", url);
 			gettimeofday(&tv2, NULL);
 
 			if (!(fp1 = fopen("/tmp/latency.txt", "r"))) {

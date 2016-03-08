@@ -541,7 +541,7 @@ download_thread(void *ptr)
 	dl_thread_arg_t *in;
 	struct stat file_stat;
 	char file[16];
-	double time_diff, time_thread;
+	double time_diff, time_thread, tmp_download;
 
 	if (get_uptime(&time_thread)) {
 		fprintf(stderr, "Error on getting /proc/uptime\n");
@@ -573,6 +573,8 @@ download_thread(void *ptr)
 	}
 	time_diff = (time_thread - time_dl_start);
 	printf("download = %.2f\n", ((finished / 1024 / 1024 / time_diff) * 8));
+	sprintf(tmp_download, "speedtest_download=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
+	eval("dbus", "ram", tmp_download);
 
 	eval("rm", file);
 
@@ -681,6 +683,7 @@ upload_thread(void *ptr)
 	struct stat file_stat;
 	double time_diff;
 	double time_thread;
+	double tmp_upload;
 
 	if (get_uptime(&time_thread)) {
 		fprintf(stderr, "Error on getting /proc/uptime\n");
@@ -708,6 +711,8 @@ upload_thread(void *ptr)
 	}
 	time_diff = (time_thread - time_ul_start);
 	printf("upload = %.2f\n", ((finished / 1024 / 1024 / time_diff) * 8));
+	sprintf(tmp_upload, "speedtest_upload=%.2f", ((finished / 1024 / 1024 / time_diff) * 8));
+	eval("dbus", "ram", tmp_download);
 
 	eval("rm", in->file_result);
 

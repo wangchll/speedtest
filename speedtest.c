@@ -541,7 +541,8 @@ download_thread(void *ptr)
 	dl_thread_arg_t *in;
 	struct stat file_stat;
 	char file[16];
-	double time_diff, time_thread, tmp_download;
+	double time_diff, time_thread;
+	char tmp_download[10];
 
 	if (get_uptime(&time_thread)) {
 		fprintf(stderr, "Error on getting /proc/uptime\n");
@@ -683,7 +684,7 @@ upload_thread(void *ptr)
 	struct stat file_stat;
 	double time_diff;
 	double time_thread;
-	double tmp_upload;
+	char tmp_upload[10];
 
 	if (get_uptime(&time_thread)) {
 		fprintf(stderr, "Error on getting /proc/uptime\n");

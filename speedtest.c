@@ -352,7 +352,7 @@ get_nearest_servers(client_config_t *client, server_config_t *servers)
 	int j, k;
 
 	eval("curl", "-L", "-s", "-o", "/tmp/speedtest-servers.php",
-		"http://c.speedtest.net/speedtest-servers-static.php?threads=4");
+		"http://diydns.applinzi.com/speedtest-servers-static.xml");
 
 	if (!(fp1 = fopen("/tmp/speedtest-servers.php", "r"))) {
 		perror("fopen /tmp/speedtest-servers.php");
